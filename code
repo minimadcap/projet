@@ -1,0 +1,98 @@
+def deplacement(position,matrice,moove): #0:up/1:down/2:right/3:left/4:rien
+    Y = len(matrice)-1
+    X = len(matrice[0])-1
+    matrice[position[1]][position[0]]=0.5
+    if moove == 4:
+        return position
+    if position[1] == Y and position[0] == X and (moove==2 or moove==0):
+        return position
+    if position[1] == 0 and position[0] == 0 and (moove==3 or moove==1):
+        return position
+    if position[1] == 0 and position[0] == X and (moove==3 or moove==1):
+        return position
+    if position[1] == Y and position[0] == 0 and (moove==2 or moove==0):
+        return position
+    if position[1] == Y and moove==0:
+        return position
+    if position[0] == 0 and moove==3:
+        return position
+    if position[0] == X and moove==2:
+        return position
+    if position[1] == 0 and moove==1:
+        return position
+    if moove==1:
+        return [position[0],position[1]-1]
+    if moove==0:
+        return [position[0],position[1]+1]
+    if moove==2:
+        return [position[0]+1,position[1]]
+    if moove==3:
+        return [position[0]-1,position[1]]
+    
+def reward_pixel(matrice,position):
+    if matrice[position[1]][position[0]]==1:
+        return 1000
+    if matrice[position[1]][position[0]]==0.5:
+        return -50
+    if matrice[position[1]][position[0]]==0:
+        return 0
+    
+def route_reward(route,A):
+    penaltiy = 0
+    position=[25,0]
+    for i in range(len(route)):
+        penaltiy= penaltiy + reward_pixel(A,position)
+        position = deplacement(position,A,route[i])
+    return (route,penaltiy)
+
+def couleur_nuance_de_noir(position,matrice):
+    return matrice[position[0],position[1]]
+
+def mutation(n,r):
+    R=copy.deepcopy(r)
+    for k in range(n):
+        R[rd.randint(0,len(r)-1)]=rd.randint(0,4)
+    return R
+    
+    def generation_randome_route(matrice):
+    route_max=((len(matrice[0]))//2)*((len(matrice[1]))//2)
+    return [rd.randint(0,4) for i in range(route_max)] #0=up;1=down;right=2;3=left;4=rien
+
+def premiere_population(n,matrice):
+    [generation_randome_route(matrice) for i in range(n)]
+    
+    import copy
+from tqdm import tqdm
+n=0
+dic={}
+A=copy.deepcopy(Vide50x50)
+maxi=-10**6
+B=copy.deepcopy(Vide50x50)
+for i in tqdm(range(500000)):
+    r = generation_randome_route(Vide50x50)
+    A=copy.deepcopy(Vide50x50)
+    R=route_reward(r,A)[1]
+    dic[i]=route_reward(r,A)[0]    
+    if maxi<R:
+        maxi=R
+        n=i
+        B=copy.deepcopy(A)
+print(maxi)
+imgplot = plt.imshow(B,origin='lower')
+
+dict={}
+a=0
+route_a_modifier=dic[n]
+A=copy.deepcopy(Vide50x50)
+maxi=-10**6
+B=copy.deepcopy(Vide50x50)
+for i in tqdm(range(10000)):
+    r = mutation(20,route_a_modifier)
+    A=copy.deepcopy(Vide50x50)
+    R=route_reward(r,A)[1]
+    dict[i]=route_reward(r,A)[0]
+    if maxi<R:
+        maxi=R
+        a=i
+        B=copy.deepcopy(A)
+imgplot = plt.imshow(B,origin='lower')
